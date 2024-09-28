@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NONGOR FOOTWEAR</title>
+    <link rel="icon" href="https://iconape.com/wp-content/png_logo_vector/apex-shoes-logo.png" sizes="48x48">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href='https://fonts.googleapis.com/css?family=Sriracha' rel='stylesheet' type='text/css'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Sriracha', sans-serif;
+        }
+
+        a {
+            color: #198754;
+            text-decoration: none;
+        }
+
+        #ptable {
+            display: none;
+        }
+
+        span {
+            cursor: pointer;
+        }
+
+        #errorMessage {
+            color: red;
+        }
+
+        table th {
+            background-color: #ffc107;
+        }
+
+        #cartTable {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="flex: 0 1 auto; text-align: center; font-weight: bold; color: #172774;">NONGOR FOOTWEAR</div>
+        <img src="https://iconape.com/wp-content/png_logo_vector/apex-shoes-logo.png" alt="Stamp" class=""text-center style="height: 40px;" />
+        
+        <div class="row justify-content-md-center">
+            <div class="col-md-6">
+                <div class="card border mb-2">
+                    <div class="card-header text-white bg-success">
+                        <i class="fas fa-search"></i> Search With Artical Number
+                    </div>
+                    <div class="card-body">
+                        <form onsubmit="search(event)">
+                            <div id="qr-reader" class="mt-4" style="position: relative; padding: 0px; border: none;"></div>
+                            <div id="qr-reader-results"></div>
+                            <div class="col-md-12 mb-2">
+                                <input type="text" id="idcard" class="form-control text-center" placeholder="Enter Your Artical Number" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 mb-2">Search</button>
+                            <div class="text-center">
+                                <span id="errorMessage"></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="ptable">
+                    <table id="table" class="table table-bordered"></table>
+                </div>
+                
+                <!-- Cart Section -->
+                <div class="card border mb-2">
+                    <div class="card-header text-white bg-warning">
+                        <i class="fas fa-shopping-cart"></i> Cart
+                    </div>
+                    <div class="card-body">
+                        <table id="cartTable" class="table table-bordered">
+                            <thead class="bg-warning">
+                                <tr>
+                                    <th scope="col">Article</th>
+                                    <th scope="col">Size</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItems"></tbody>
+                        </table>
+                        <button class="btn btn-success w-100" onclick="proceedToSales()">Proceed to Sales</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end fixed-bottom mb-2 me-2">
+        <span data-bs-toggle="modal" data-bs-target="#creditModal">
+            <i class="fa-solid fa-circle-info fa-2x text-success"></i>
+        </span>
+    </div>
+
+    <script>
+        var data = [];
+        var cart = []; // Cart to store selected items
+
+        $(document).ready(function () {
+            Swal.fire({
+                position: 'top',
+                icon: 'info',
+                title: 'Loading..',
+                showConfirmButton: false,
+            });
+            Swal.showLoading();
+
+            $.ajax({
+                url: 'https://script.google.com/macros/s/AKfycbwIBwLhJu8ON9e7FFyZmu0jeWsWHxHq7baRBBspk0r9DRQCDrv5B6is3cJsjGqKWKxofQ/exec',
+                method: 'GET',
+                success: function (response) {
+                    try {
+                        if (response.data && Array.isArray(response.data)) {
+                            data = response.data;
+                        } else {
+                            throw new Error("Data is not an array or is missing.");
+                        }
+                        Swal.close(); 
+                    } catch (error) {
+                        console.error("Data parsing error:", error);
+                        Swal.fire({
+                            position: 'top',
+                            icon: 'error',
+                            title: 'Error parsing data!',
+                            showConfirmButton: true,
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'error',
+                        title: 'Error loading data!',
+                        showConfirmButton: true,
+                    });
+                }
+            });
+
+            $("#idcard").on("keyup", function (event) {
+                if (event.keyCode === 13) {
+                    search(event);
+                }
+            });
+        });
+
+        function search(event) {
+            event.preventDefault();
+
+            var id = $("#idcard").val().trim();
+            var error = $("#errorMessage");
+
+            if (Array.isArray(data) && data.length > 0) {
+                var filteredData = data.filter(function (item) {
+                    return Object.values(item).some(value =>
+                        value.toString().toLowerCase().includes(id.toLowerCase())
+                    );
+                });
+
+                if (filteredData.length > 0) {
+                    var result = "<div>" +
+                        "<table class='table table-bordered'>" +
+                        "<thead class='bg-warning'>" +
+                        "<tr>" +
+                        "<th scope='col'>Article</th>" +
+                        "<th scope='col'>Size</th>" +
+                        "<th scope='col'>Price</th>" +
+                        "<th scope='col'>Quantity</th>" +
+                        "<th scope='col'>Action</th>" +
+                        "</tr>" +
+                        "</thead><tbody>";
+
+                    filteredData.forEach(function (row, index) {
+                        result += "<tr>";
+                        result += "<td>" + row.Artical + "</td>";
+                        result += "<td>" + row.Size + "</td>";
+                        result += "<td>" + row.Price + "</td>";
+                        result += "<td>" + row.Quantity + "</td>";
+                        result += "<td><button class='btn btn-success' onclick='addToCart(" + index + ")'>Add to Cart</button></td>";
+                        result += "</tr>";
+                    });
+
+                    result += "</tbody></table>";
+                    $('#table').html(result);
+                    error.text("");
+                    $('#ptable').show();
+                    $("#idcard").val("");
+                } else {
+                    error.text("Data not found!");
+                    $('#ptable').hide();
+                }
+            } else {
+                error.text("Unexpected data format.");
+                $('#ptable').hide();
+            }
+        }
+
+        function addToCart(index) {
+            var selectedItem = data[index];
+            cart.push(selectedItem);
+
+            // Display cart
+            displayCart();
+        }
+
+        function displayCart() {
+            if (cart.length > 0) {
+                $('#cartTable').show();
+                var cartItems = "";
+
+                cart.forEach(function (item, index) {
+                    cartItems += "<tr>";
+                    cartItems += "<td>" + item.Artical + "</td>";
+                    cartItems += "<td>" + item.Size + "</td>";
+                    cartItems += "<td>" + item.Price + "</td>";
+                    cartItems += "<td>" + item.Quantity + "</td>";
+                    cartItems += "<td><button class='btn btn-danger' onclick='removeFromCart(" + index + ")'>Remove</button></td>";
+                    cartItems += "</tr>";
+                });
+
+                $('#cartItems').html(cartItems);
+            } else {
+                $('#cartTable').hide();
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            displayCart();
+        }
+
+        function proceedToSales() {
+            if (cart.length > 0) {
+                console.log("Proceeding to sales with cart items:", cart);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cart Submitted!',
+                    text: 'Items have been added to sales.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                cart = []; // Clear cart after proceeding to sales
+                displayCart();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cart is empty!',
+                    text: 'Please add some items first.',
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
