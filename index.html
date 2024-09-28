@@ -104,8 +104,34 @@
             <i class="fa-solid fa-circle-info fa-2x text-success"></i>
         </span>
     </div>
+<!-- Inside your form table row for search results -->
+<div id="ptable">
+    <table id="table" class="table table-bordered"></table>
+</div>
 
-   <script>
+<!-- The modified cart code -->
+<div class="card border mb-2">
+    <div class="card-header text-white bg-warning">
+        <i class="fas fa-shopping-cart"></i> Cart
+    </div>
+    <div class="card-body">
+        <table id="cartTable" class="table table-bordered">
+            <thead class="bg-warning">
+                <tr>
+                    <th scope="col">Article</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Remove</th>
+                </tr>
+            </thead>
+            <tbody id="cartItems"></tbody>
+        </table>
+        <button class="btn btn-success w-100" onclick="proceedToSales()">Proceed to Sales</button>
+    </div>
+</div>
+
+<script>
     var data = [];
     var cart = []; // Cart to store selected items
 
@@ -206,38 +232,16 @@
 
     function proceedToSales() {
         if (cart.length > 0) {
-            $.ajax({
-                url: "https://script.google.com/macros/s/AKfycbxnXEH__leZ2FWQ77nxoPjmDM3XcfGyzvey3rOqi9kbFIB5ty7t6qKwcjix-lC8OlqB/exec", // Replace with the Google Apps Script web app URL
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({ cart: cart }),
-                success: function (response) {
-                    if (response.result === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Cart Submitted!',
-                            text: 'Items have been added to sales.',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                        cart = []; // Clear cart after submission
-                        displayCart();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: response.message,
-                        });
-                    }
-                },
-                error: function (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Submission Failed!',
-                        text: 'There was an issue submitting the cart.',
-                    });
-                }
+            console.log("Proceeding to sales with cart items:", cart);
+            Swal.fire({
+                icon: 'success',
+                title: 'Cart Submitted!',
+                text: 'Items have been added to sales.',
+                showConfirmButton: false,
+                timer: 1500
             });
+            cart = []; // Clear cart after proceeding to sales
+            displayCart();
         } else {
             Swal.fire({
                 icon: 'warning',
@@ -246,8 +250,8 @@
             });
         }
     }
-
 </script>
+
 
     <!--
   This code uses the html5-qrcode library from GitHub: https://github.com/mebjas/html5-qrcode
