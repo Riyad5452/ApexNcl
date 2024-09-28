@@ -104,89 +104,135 @@
             <i class="fa-solid fa-circle-info fa-2x text-success"></i>
         </span>
     </div>
-<!-- Inside your form table row for search results -->
-<div id="ptable">
-    <table id="table" class="table table-bordered"></table>
-</div>
 
-<!-- The modified cart code -->
-<div class="card border mb-2">
-    <div class="card-header text-white bg-warning">
-        <i class="fas fa-shopping-cart"></i> Cart
-    </div>
-    <div class="card-body">
-        <table id="cartTable" class="table table-bordered">
-            <thead class="bg-warning">
-                <tr>
-                    <th scope="col">Article</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Remove</th>
-                </tr>
-            </thead>
-            <tbody id="cartItems"></tbody>
-        </table>
-        <button class="btn btn-success w-100" onclick="proceedToSales()">Proceed to Sales</button>
-    </div>
-</div>
+    <script>
+        var data = [];
+        var cart = []; // Cart to store selected items
 
-<script>
-    var data = [];
-    var cart = []; // Cart to store selected items
+        $(document).ready(function () {
+            // Show loading Swal
+            Swal.fire({
+                position: 'top',
+                icon: 'info',
+                title: 'Loading..',
+                showConfirmButton: false,
+            });
+            Swal.showLoading();
 
-    function search(event) {
-        event.preventDefault();
+            // Fetch data via Ajax
+            $.ajax({
+                url: 'https://script.google.com/macros/s/AKfycbwIBwLhJu8ON9e7FFyZmu0jeWsWHxHq7baRBBspk0r9DRQCDrv5B6is3cJsjGqKWKxofQ/exec',
+                method: 'GET',
+                success: function (response) {
+                    try {
+                        console.log("Raw data fetched:", response); // Log the raw data
 
-        var id = $("#idcard").val().trim();
-        var error = $("#errorMessage");
+                        // Access the array from the response
+                        if (response.data && Array.isArray(response.data)) {
+                            data = response.data; // Assign the data array
+                        } else {
+                            throw new Error("Data is not an array or is missing.");
+                        }
 
-        if (Array.isArray(data) && data.length > 0) {
-            var filteredData = data.filter(function (item) {
-                return Object.values(item).some(value =>
-                    value.toString().toLowerCase().includes(id.toLowerCase())
-                );
+                        console.log("Parsed data:", data); // Debug to check data structure
+
+                        // Validate data structure
+                        if (data.length > 0 && data.every(item => typeof item === 'object' && item.Artical)) {
+                            Swal.close(); // Close the loading Swal
+                        } else {
+                            console.error("Data is not an array of objects or is empty:", data); // Debugging log
+                            Swal.fire({
+                                position: 'top',
+                                icon: 'error',
+                                title: 'Unexpected data format!',
+                                showConfirmButton: true,
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Data parsing error:", error);
+                        Swal.fire({
+                            position: 'top',
+                            icon: 'error',
+                            title: 'Error parsing data!',
+                            showConfirmButton: true,
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'error',
+                        title: 'Error loading data!',
+                        showConfirmButton: true,
+                    });
+                }
             });
 
-            if (filteredData.length > 0) {
-                var result = "<div>" +
-                    "<table class='table table-bordered'>" +
-                    "<thead class='bg-warning'>" +
-                    "<tr>" +
-                    "<th scope='col'>Article</th>" +
-                    "<th scope='col'>Size</th>" +
-                    "<th scope='col'>Price</th>" +
-                    "<th scope='col'>Quantity</th>" +
-                    "<th scope='col'>Action</th>" +
-                    "</tr>" +
-                    "</thead><tbody>";
+            // Search on keyup
+            $("#idcard").on("keyup", function (event) {
+                if (event.keyCode === 13) { // Detect Enter key press
+                    search(event);
+                }
+            });
+        });
 
-                filteredData.forEach(function (row, index) {
-                    result += "<tr>";
-                    result += "<td>" + row.Artical + "</td>";
-                    result += "<td>" + row.Size + "</td>";
-                    result += "<td>" + row.Price + "</td>";
-                    result += "<td>" + row.Quantity + "</td>"; // Show the original quantity
-                    result += "<td><button class='btn btn-success' onclick='addToCart(" + index + ")'>Add to Cart</button></td>";
-                    result += "</tr>";
-                });
+        function search(event) {
+            event.preventDefault();
 
-                result += "</tbody></table>";
-                $('#table').html(result);
-                error.text(""); // Clear error message
-                $('#ptable').show();
-                $("#idcard").val(""); // Clear the input field
+            var id = $("#idcard").val().trim();
+            var error = $("#errorMessage");
+
+            // Check if data is an array before using .filter()
+            if (Array.isArray(data) && data.length > 0) {
+              var filteredData = data.filter(function (item) {
+                  // Convert item to a string and check if it contains the search keyword (case insensitive)
+                  return Object.values(item).some(value =>
+                      value.toString().toLowerCase().includes(id.toLowerCase())
+                  );
+              });
+
+
+                if (filteredData.length > 0) {
+                    var result = "<div>" +
+                        "<table class='table table-bordered'>" +
+                        "<thead class='bg-warning'>" +
+                        "<tr>" +
+                        "<th scope='col'>Article</th>" +
+                        "<th scope='col'>Size</th>" +
+                        "<th scope='col'>Price</th>" +
+                        "<th scope='col'>Quantity</th>" +
+                        "<th scope='col'>Action</th>" +
+                        "</tr>" +
+                        "</thead><tbody>";
+
+                    filteredData.forEach(function (row, index) {
+                        result += "<tr>";
+                        result += "<td>" + row.Artical + "</td>"; // Access the Artical key
+                        result += "<td>" + row.Size + "</td>"; // Access the Size key
+                        result += "<td>" + row.Price + "</td>"; // Access the Price key
+                        result += "<td>" + row.Quantity + "</td>"; // Show the original quantity
+                        result += "<td><button class='btn btn-success' onclick='addToCart(" + index + ")'>Add to Cart</button></td>";
+                        result += "</tr>";
+                    });
+
+                    result += "</tbody></table>";
+                    $('#table').html(result);
+                    error.text(""); // Clear error message
+                    $('#ptable').show();
+                    $("#idcard").val(""); // Clear the input field
+                } else {
+                    error.text("Data not found!");
+                    $('#ptable').hide();
+                }
             } else {
-                error.text("Data not found!");
+                console.error("Data is not an array or is empty:", data); // Debugging log
+                error.text("Unexpected data format.");
                 $('#ptable').hide();
             }
-        } else {
-            error.text("Unexpected data format.");
-            $('#ptable').hide();
         }
-    }
 
-    function addToCart(index) {
+
+function addToCart(index) {
         var selectedItem = data[index];
 
         // Add a default quantity of 1 to the item when added to the cart
@@ -250,9 +296,7 @@
             });
         }
     }
-</script>
-
-
+ </script>
     <!--
   This code uses the html5-qrcode library from GitHub: https://github.com/mebjas/html5-qrcode
   Example Link: https://gist.github.com/mebjas/729c5397506a879ec704075c8a5284e8
