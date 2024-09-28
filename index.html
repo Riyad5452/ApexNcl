@@ -277,47 +277,51 @@ function addToCart(index) {
     }
 
     function proceedToSales() {
-        if (cart.length > 0) {
-            $.ajax({
-                url: "https://script.google.com/macros/s/AKfycbxfzU49PP79afF1m91-ypEr7WyAtNKj_EvLa9QnkpU1e8KBu-Vh_zPSM0DfXJAAe9gY/exec", // Replace with the Google Apps Script web app URL
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({ cart: cart }),
-                success: function (response) {
-                    if (response.result === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Cart Submitted!',
-                            text: 'Items have been added to sales.',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                        cart = []; // Clear cart after submission
-                        displayCart();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: response.message,
-                        });
-                    }
-                },
-                error: function (error) {
+    if (cart.length > 0) {
+        console.log("Sending cart data:", cart); // Log cart data to the console
+        $.ajax({
+            url: "https://script.google.com/macros/s/AKfycbxfzU49PP79afF1m91-ypEr7WyAtNKj_EvLa9QnkpU1e8KBu-Vh_zPSM0DfXJAAe9gY/exec",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ cart: cart }),
+            success: function (response) {
+                console.log("Response from server:", response); // Log server response
+                if (response.result === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cart Submitted!',
+                        text: 'Items have been added to sales.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    cart = [];
+                    displayCart();
+                } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Submission Failed!',
-                        text: 'There was an issue submitting the cart.',
+                        title: 'Error!',
+                        text: response.message,
                     });
                 }
-            });
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Cart is empty!',
-                text: 'Please add some items first.',
-            });
-        }
+            },
+            error: function (error) {
+                console.log("AJAX error:", error); // Log AJAX error details
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed!',
+                    text: 'There was an issue submitting the cart.',
+                });
+            }
+        });
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cart is empty!',
+            text: 'Please add some items first.',
+        });
     }
+}
+
 
  </script>
     <!--
