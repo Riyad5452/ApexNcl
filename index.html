@@ -37,6 +37,10 @@
         table th {
             background-color: #ffc107;
         }
+
+        #cartTable {
+            display: none;
+        }
     </style>
 </head>
 
@@ -69,6 +73,28 @@
                 <div id="ptable">
                     <table id="table" class="table table-bordered"></table>
                 </div>
+                <!-- Cart Section -->
+                <div class="card border mb-2">
+                    <div class="card-header text-white bg-warning">
+                        <i class="fas fa-shopping-cart"></i> Cart
+                    </div>
+                    <div class="card-body">
+                        <table id="cartTable" class="table table-bordered">
+                            <thead class="bg-warning">
+                                <tr>
+                                    <th scope="col">Article</th>
+                                    <th scope="col">Size</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItems"></tbody>
+                        </table>
+                        <button class="btn btn-success w-100" onclick="proceedToSales()">Proceed to Sales</button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -81,6 +107,7 @@
 
     <script>
         var data = [];
+        var cart = []; // Cart to store selected items
 
         $(document).ready(function () {
             // Show loading Swal
@@ -174,6 +201,7 @@
                         "<th scope='col'>Size</th>" +
                         "<th scope='col'>Price</th>" +
                         "<th scope='col'>Quantity</th>" +
+                        "<th scope='col'>Action</th>" +
                         "</tr>" +
                         "</thead><tbody>";
 
@@ -183,6 +211,7 @@
                         result += "<td>" + row.Size + "</td>"; // Access the Size key
                         result += "<td>" + row.Price + "</td>"; // Access the Price key
                         result += "<td>" + row.Quantity + "</td>"; // Access the Quantity key
+                        result += "<td><button class='btn btn-success' onclick='addToCart(" + index + ")'>Add to Cart</button></td>";
                         result += "</tr>";
                     });
 
@@ -201,6 +230,63 @@
                 $('#ptable').hide();
             }
         }
+
+
+function addToCart(index) {
+            var selectedItem = data[index];
+            cart.push(selectedItem);
+
+            // Display cart
+            displayCart();
+        }
+
+        function displayCart() {
+            if (cart.length > 0) {
+                $('#cartTable').show();
+                var cartItems = "";
+
+                cart.forEach(function (item, index) {
+                    cartItems += "<tr>";
+                    cartItems += "<td>" + item.Artical + "</td>";
+                    cartItems += "<td>" + item.Size + "</td>";
+                    cartItems += "<td>" + item.Price + "</td>";
+                    cartItems += "<td>" + item.Quantity + "</td>";
+                    cartItems += "<td><button class='btn btn-danger' onclick='removeFromCart(" + index + ")'>Remove</button></td>";
+                    cartItems += "</tr>";
+                });
+
+                $('#cartItems').html(cartItems);
+            } else {
+                $('#cartTable').hide();
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            displayCart();
+        }
+
+        function proceedToSales() {
+            if (cart.length > 0) {
+                console.log("Proceeding to sales with cart items:", cart);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cart Submitted!',
+                    text: 'Items have been added to sales.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                cart = []; // Clear cart after proceeding to sales
+                displayCart();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cart is empty!',
+                    text: 'Please add some items first.',
+                });
+            }
+        }
+        
     </script>
     <!--
   This code uses the html5-qrcode library from GitHub: https://github.com/mebjas/html5-qrcode
