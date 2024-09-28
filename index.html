@@ -105,9 +105,9 @@
         </span>
     </div>
 
-    <script>
+   <script>
     var data = [];
-    var cart = [];
+    var cart = []; // Cart to store selected items
 
     function search(event) {
         event.preventDefault();
@@ -140,7 +140,7 @@
                     result += "<td>" + row.Artical + "</td>";
                     result += "<td>" + row.Size + "</td>";
                     result += "<td>" + row.Price + "</td>";
-                    result += "<td>" + row.Quantity + "</td>";
+                    result += "<td>" + row.Quantity + "</td>"; // Show the original quantity
                     result += "<td><button class='btn btn-success' onclick='addToCart(" + index + ")'>Add to Cart</button></td>";
                     result += "</tr>";
                 });
@@ -163,10 +163,12 @@
     function addToCart(index) {
         var selectedItem = data[index];
 
+        // Add a default quantity of 1 to the item when added to the cart
         selectedItem.cartQuantity = 1; 
 
         cart.push(selectedItem);
 
+        // Display cart
         displayCart();
     }
 
@@ -180,6 +182,7 @@
                 cartItems += "<td>" + item.Artical + "</td>";
                 cartItems += "<td>" + item.Size + "</td>";
                 cartItems += "<td>" + item.Price + "</td>";
+                // Add quantity input field here to allow users to update the quantity directly in the cart
                 cartItems += "<td><input type='number' class='form-control' value='" + item.cartQuantity + "' min='1' onchange='updateCartQuantity(" + index + ", this.value)'></td>";
                 cartItems += "<td><button class='btn btn-danger' onclick='removeFromCart(" + index + ")'>Remove</button></td>";
                 cartItems += "</tr>";
@@ -192,12 +195,12 @@
     }
 
     function updateCartQuantity(index, quantity) {
-        cart[index].cartQuantity = parseInt(quantity); 
-        displayCart(); 
+        cart[index].cartQuantity = parseInt(quantity); // Update the cart quantity based on user input
+        displayCart(); // Re-render the cart
     }
 
     function removeFromCart(index) {
-        cart.splice(index, 1); 
+        cart.splice(index, 1); // Remove item from cart
         displayCart();
     }
 
@@ -243,6 +246,7 @@
             });
         }
     }
+
 </script>
 
     <!--
