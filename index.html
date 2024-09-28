@@ -279,6 +279,7 @@ function addToCart(index) {
     function proceedToSales() {
     if (cart.length > 0) {
         console.log("Sending cart data:", cart); // Log cart data to the console
+        
         $.ajax({
             url: "https://script.google.com/macros/s/AKfycbxfzU49PP79afF1m91-ypEr7WyAtNKj_EvLa9QnkpU1e8KBu-Vh_zPSM0DfXJAAe9gY/exec",
             type: "POST",
@@ -286,7 +287,8 @@ function addToCart(index) {
             data: JSON.stringify({ cart: cart }),
             success: function (response) {
                 console.log("Response from server:", response); // Log server response
-                if (response.result === 'success') {
+                
+                if (response && response.result === 'success') {
                     Swal.fire({
                         icon: 'success',
                         title: 'Cart Submitted!',
@@ -297,22 +299,26 @@ function addToCart(index) {
                     cart = [];
                     displayCart();
                 } else {
+                    let message = response && response.message ? response.message : 'An unknown error occurred.';
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: response.message,
+                        text: message,
                     });
                 }
             },
-            error: function (error) {
-                console.log("AJAX error:", error); // Log AJAX error details
+            error: function (xhr, status, error) {
+                console.log("AJAX error details:", { xhr, status, error }); // Log detailed error info
+                
+                let errorMessage = xhr.responseText ? xhr.responseText : 'There was an issue submitting the cart.';
                 Swal.fire({
                     icon: 'error',
                     title: 'Submission Failed!',
-                    text: 'There was an issue submitting the cart.',
+                    text: errorMessage,
                 });
             }
         });
+        
     } else {
         Swal.fire({
             icon: 'warning',
