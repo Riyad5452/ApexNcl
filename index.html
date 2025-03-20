@@ -73,6 +73,9 @@
                 <div id="ptable">
                     <table id="table" class="table table-bordered"></table>
                 </div>
+                <audio id="beep-sound">
+        <source src="https://semicon.github.io/sounds/store-scanner-beep-90395.mp3"  type="audio/mpeg">
+    </audio>
                 <!-- Cart Section -->
                 <div class="card border mb-2">
                     <div class="card-header text-white bg-warning">
@@ -368,6 +371,11 @@ function addToCart(index) {
               productCode.value = decodedText;
 
               search(event);
+
+            // เล่นเสียงบี๊บ
+            document.getElementById("beep-sound").play();
+
+              html5QrcodeScanner.clear();
           }
       }
       
